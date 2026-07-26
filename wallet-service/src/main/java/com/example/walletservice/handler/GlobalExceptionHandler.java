@@ -2,7 +2,9 @@ package com.example.walletservice.handler;
 
 import com.example.walletservice.dto.response.ApiResponse;
 import com.example.walletservice.exception.EmailAlreadyExistsException;
+import com.example.walletservice.exception.InsufficientBalanceException;
 import com.example.walletservice.exception.InvalidCredentialsException;
+import com.example.walletservice.exception.WalletNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -49,5 +51,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ApiResponse(false, "An unexpected error occurred: " + ex.getMessage()));
+    }
+
+    @ExceptionHandler(WalletNotFoundException.class)
+    public ResponseEntity<ApiResponse> handleWalletNotFound(WalletNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse(false, ex.getMessage()));
+    }
+
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<ApiResponse> handleInsufficientBalance(InsufficientBalanceException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse(false, ex.getMessage()));
     }
 }
