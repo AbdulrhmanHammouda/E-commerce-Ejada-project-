@@ -2,6 +2,7 @@ package com.example.walletservice.service;
 
 import com.example.walletservice.dto.request.DepositRequest;
 import com.example.walletservice.dto.request.WithdrawRequest;
+import com.example.walletservice.dto.response.TransactionResponse;
 import com.example.walletservice.dto.response.WalletOperationResponse;
 import com.example.walletservice.entity.Transaction;
 import com.example.walletservice.entity.TransactionType;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public class WalletService {
@@ -77,5 +79,26 @@ public class WalletService {
         Transaction savedTransaction = transactionRepository.save(transaction);
 
         return new WalletOperationResponse(request.getAmount(), newBalance, savedTransaction.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TransactionResponse> getTransactionHistory(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        Wallet wallet = walletRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new WalletNotFoundException("Wallet not found for user: " + userEmail));
+
+        List<Transaction> transactions = transactionRepository.findByWalletIdOrderByCreatedAtDesc(wallet.getId());
+
+        return transactions.stream()
+                .map(t -> new TransactionResponse(
+                        t.getId(),
+                        t.getType(),
+                        t.getAmount(),
+                        t.getDescription(),
+                        t.getCreatedAt()
+                ))
+                .toList();
     }
 }
