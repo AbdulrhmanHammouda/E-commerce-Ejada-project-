@@ -38,4 +38,12 @@ public class AuthController {
                 .status(HttpStatus.OK)
                 .body(new ApiResponse(true, "Login successful", response));
     }
+
+    @PostMapping("/register-admin")
+    public ResponseEntity<ApiResponse> registerAdmin(@Valid @RequestBody RegisterRequest request) {
+        AuthResponse response = authService.registerAdmin(request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new ApiResponse(true, "Admin registration successful", response));
+    }
 }
