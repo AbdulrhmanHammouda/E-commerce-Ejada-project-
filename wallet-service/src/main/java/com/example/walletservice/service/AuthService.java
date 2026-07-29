@@ -16,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class AuthService {
@@ -55,6 +57,7 @@ public class AuthService {
 
         java.util.Map<String, Object> claims = new java.util.HashMap<>();
         claims.put("role", user.getRole().name());
+        claims.put("userId", user.getId());
         String jwtToken = jwtService.generateToken(claims, user);
 
         return new AuthResponse(jwtToken, new AuthResponse.UserDto(user.getId(), user.getFullName(), user.getEmail(), user.getRole().name()));
@@ -72,8 +75,9 @@ public class AuthService {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow();
-        java.util.Map<String, Object> claims = new java.util.HashMap<>();
+         Map<String, Object> claims = new HashMap<>();
         claims.put("role", user.getRole() != null ? user.getRole().name() : "USER");
+        claims.put("userId", user.getId());
         String jwtToken = jwtService.generateToken(claims, user);
 
         return new AuthResponse(jwtToken, new AuthResponse.UserDto(user.getId(), user.getFullName(), user.getEmail(), user.getRole() != null ? user.getRole().name() : "USER"));
@@ -96,8 +100,9 @@ public class AuthService {
         Wallet wallet = new Wallet();
         wallet.setUser(saveduser);
         walletRepository.save(wallet);
-        java.util.Map<String, Object> claims = new java.util.HashMap<>();
+       Map<String, Object> claims = new HashMap<>();
         claims.put("role", user.getRole().name());
+        claims.put("userId", user.getId());
         String jwtToken = jwtService.generateToken(claims, user);
 
         return new AuthResponse(jwtToken, new AuthResponse.UserDto(user.getId(), user.getFullName(), user.getEmail(), user.getRole().name()));
