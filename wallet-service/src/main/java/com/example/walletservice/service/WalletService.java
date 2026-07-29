@@ -34,12 +34,9 @@ public class WalletService {
     }
 
     @Transactional
-    public WalletOperationResponse deposit(String userEmail, DepositRequest request) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        Wallet wallet = walletRepository.findByUserIdWithLock(user.getId())
-                .orElseThrow(() -> new WalletNotFoundException("Wallet not found for user: " + userEmail));
+    public WalletOperationResponse deposit(Long userId, DepositRequest request) {
+        Wallet wallet = walletRepository.findByUserIdWithLock(userId)
+                .orElseThrow(() -> new WalletNotFoundException("Wallet not found for user: " + userId));
 
         BigDecimal newBalance = wallet.getBalance().add(request.getAmount());
         wallet.setBalance(newBalance);
@@ -56,12 +53,9 @@ public class WalletService {
     }
 
     @Transactional
-    public WalletOperationResponse withdraw(String userEmail, WithdrawRequest request) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        Wallet wallet = walletRepository.findByUserIdWithLock(user.getId())
-                .orElseThrow(() -> new WalletNotFoundException("Wallet not found for user: " + userEmail));
+    public WalletOperationResponse withdraw(Long userId, WithdrawRequest request) {
+        Wallet wallet = walletRepository.findByUserIdWithLock(userId)
+                .orElseThrow(() -> new WalletNotFoundException("Wallet not found for user: " + userId));
 
         if (wallet.getBalance().compareTo(request.getAmount()) < 0) {
             throw new InsufficientBalanceException("Insufficient funds. Current balance: " + wallet.getBalance());
@@ -82,12 +76,9 @@ public class WalletService {
     }
 
     @Transactional(readOnly = true)
-    public List<TransactionResponse> getTransactionHistory(String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        Wallet wallet = walletRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new WalletNotFoundException("Wallet not found for user: " + userEmail));
+    public List<TransactionResponse> getTransactionHistory(Long userId) {
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new WalletNotFoundException("Wallet not found for user: " + userId));
 
         List<Transaction> transactions = transactionRepository.findByWalletIdOrderByCreatedAtDesc(wallet.getId());
 

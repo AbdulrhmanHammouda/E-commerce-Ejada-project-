@@ -25,24 +25,24 @@ public class WalletController {
     }
 
     @PostMapping("/deposit")
-    public ResponseEntity<ApiResponse> deposit(@Valid @RequestBody DepositRequest request, Authentication authentication) {
-        WalletOperationResponse response = walletService.deposit(authentication.getName(), request);
+    public ResponseEntity<ApiResponse> deposit(@Valid @RequestBody DepositRequest request, @RequestHeader("X-User-Id") Long userId) {
+        WalletOperationResponse response = walletService.deposit(userId, request);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new ApiResponse(true, "Deposit successful", response));
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<ApiResponse> withdraw(@Valid @RequestBody WithdrawRequest request, Authentication authentication) {
-        WalletOperationResponse response = walletService.withdraw(authentication.getName(), request);
+    public ResponseEntity<ApiResponse> withdraw(@Valid @RequestBody WithdrawRequest request, @RequestHeader("X-User-Id") Long userId) {
+        WalletOperationResponse response = walletService.withdraw(userId, request);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new ApiResponse(true, "Withdrawal successful", response));
     }
 
     @GetMapping({"/transactions", "/history"})
-    public ResponseEntity<ApiResponse> getTransactionHistory(Authentication authentication) {
-        List<TransactionResponse> transactions = walletService.getTransactionHistory(authentication.getName());
+    public ResponseEntity<ApiResponse> getTransactionHistory(@RequestHeader("X-User-Id") Long userId) {
+        List<TransactionResponse> transactions = walletService.getTransactionHistory(userId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new ApiResponse(true, "Transaction history retrieved successfully", transactions));
