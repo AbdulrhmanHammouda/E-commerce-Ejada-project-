@@ -26,6 +26,13 @@ public class JwtUtil {
         return claims.get("role", String.class);
     }
 
+    // Extract the userId from the token payload
+    public Long extractUserId(final String token) {
+        Claims claims = Jwts.parser().verifyWith(getSignKey()).build().parseSignedClaims(token).getPayload();
+        Number userId = claims.get("userId", Number.class);
+        return userId != null ? userId.longValue() : null;
+    }
+
     private SecretKey getSignKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
