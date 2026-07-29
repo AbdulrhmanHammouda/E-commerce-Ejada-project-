@@ -53,8 +53,9 @@ public class AuthService {
 
         walletRepository.save(wallet);
 
-
-        String jwtToken = jwtService.generateToken(user);
+        java.util.Map<String, Object> claims = new java.util.HashMap<>();
+        claims.put("role", user.getRole().name());
+        String jwtToken = jwtService.generateToken(claims, user);
 
         return new AuthResponse(jwtToken, new AuthResponse.UserDto(user.getId(), user.getFullName(), user.getEmail(), user.getRole().name()));
     }
@@ -71,8 +72,9 @@ public class AuthService {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow();
-
-        String jwtToken = jwtService.generateToken(user);
+        java.util.Map<String, Object> claims = new java.util.HashMap<>();
+        claims.put("role", user.getRole() != null ? user.getRole().name() : "USER");
+        String jwtToken = jwtService.generateToken(claims, user);
 
         return new AuthResponse(jwtToken, new AuthResponse.UserDto(user.getId(), user.getFullName(), user.getEmail(), user.getRole() != null ? user.getRole().name() : "USER"));
     }
@@ -94,8 +96,9 @@ public class AuthService {
         Wallet wallet = new Wallet();
         wallet.setUser(saveduser);
         walletRepository.save(wallet);
-
-        String jwtToken = jwtService.generateToken(user);
+        java.util.Map<String, Object> claims = new java.util.HashMap<>();
+        claims.put("role", user.getRole().name());
+        String jwtToken = jwtService.generateToken(claims, user);
 
         return new AuthResponse(jwtToken, new AuthResponse.UserDto(user.getId(), user.getFullName(), user.getEmail(), user.getRole().name()));
     }
