@@ -1,31 +1,26 @@
 package com.example.shopservice.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "cart_items")
 public class CartItem {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id", nullable = false)
-    private Cart cart;
+    // We MUST know whose cart this is!
+    @Column(nullable = false)
+    private Long userId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // A CartItem holds exactly one type of Product
+    @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(nullable = false)
-    private Integer quantity;
+    private int quantity = 1;
 }
