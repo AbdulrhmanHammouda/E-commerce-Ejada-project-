@@ -7,4 +7,7 @@ import java.util.List;
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     // Find all items belonging to a specific user
     List<CartItem> findByUserId(Long userId);
+
+    // Find a specific product in a user's cart (used for updating quantity)
+    java.util.Optional<CartItem> findByUserIdAndProductId(Long userId, Long productId);
 }
