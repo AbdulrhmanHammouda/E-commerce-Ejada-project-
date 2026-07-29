@@ -16,10 +16,16 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    // GET /api/shop/products
+    // GET /api/shop/products (with optional UI filters)
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    public ResponseEntity<List<Product>> getProducts(
+            @RequestParam(required = false) String audience,
+            @RequestParam(required = false) Boolean isBestSeller,
+            @RequestParam(required = false) Boolean isPopular,
+            @RequestParam(required = false) Boolean isNew) {
+            
+        List<Product> products = productService.getProducts(audience, isBestSeller, isPopular, isNew);
+        return ResponseEntity.ok(products);
     }
 
     // GET /api/shop/products/{id}
@@ -32,8 +38,14 @@ public class ProductController {
 
     // POST /api/shop/products (Secured for Admins only)
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product, @RequestHeader("X-User-Role") String role) {
+    public ResponseEntity<Product> createProduct(@RequestBody Product product, 
+                                                 @RequestHeader(value = "X-User-Role", required = false) String role) {
+        if (role == null) {
+            System.out.println("DEBUG: X-User-Role header is MISSING!");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         if (!"ADMIN".equals(role)) {
+            System.out.println("DEBUG: Role is " + role + " - Kicking them out!");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         Product savedProduct = productService.createProduct(product);

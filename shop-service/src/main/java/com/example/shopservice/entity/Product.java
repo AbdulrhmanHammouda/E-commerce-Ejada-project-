@@ -33,4 +33,13 @@ public class Product {
     private String category;  
 
     private String imageUrl;
+
+    // --- New fields for UI filtering ---
+    private String targetAudience; // e.g. "Man", "Woman", "Boy", "Child"
+    
+    private boolean isBestSeller = false;
+    
+    private boolean isMostPopular = false;
+    
+    private boolean isNewArrival = false;
 }

@@ -14,8 +14,19 @@ public class ProductService {
     @Autowired
     private ProductRepository productRepository;
 
-    // Get all products
-    public List<Product> getAllProducts() {
+    // Get products with optional filters
+    public List<Product> getProducts(String audience, Boolean isBestSeller, Boolean isMostPopular, Boolean isNewArrival) {
+        if (audience != null && !audience.isEmpty()) {
+            return productRepository.findByTargetAudienceIgnoreCase(audience);
+        } else if (Boolean.TRUE.equals(isBestSeller)) {
+            return productRepository.findByIsBestSellerTrue();
+        } else if (Boolean.TRUE.equals(isMostPopular)) {
+            return productRepository.findByIsMostPopularTrue();
+        } else if (Boolean.TRUE.equals(isNewArrival)) {
+            return productRepository.findByIsNewArrivalTrue();
+        }
+        
+        // If no filters are provided, return everything
         return productRepository.findAll();
     }
 
