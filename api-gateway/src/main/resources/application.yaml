@@ -6,24 +6,25 @@ spring:
     name: api-gateway
   cloud:
     gateway:
-      routes:
-        # 1. Route for Wallet Service
-        - id: wallet-service-route
-          uri: lb://wallet-service   # 'lb://' means load balance using Eureka!
-          predicates:
-            - Path=/api/wallet/**
+      mvc:
+        routes:
+          # 1. Route for Wallet Service
+          - id: wallet-service-route
+            uri: lb://wallet-service   # 'lb://' means load balance using Eureka!
+            predicates:
+              - Path=/api/wallet/**
 
-        # 1.5. Route for Auth Service (which lives in Wallet Service)
-        - id: auth-service-route
-          uri: lb://wallet-service
-          predicates:
-            - Path=/api/auth/**
+          # 1.5. Route for Auth Service (which lives in Wallet Service)
+          - id: auth-service-route
+            uri: lb://wallet-service
+            predicates:
+              - Path=/api/auth/**
 
-        # 2. Route for Shop Service
-        - id: shop-service-route
-          uri: lb://shop-service
-          predicates:
-            - Path=/api/shop/**
+          # 2. Route for Shop Service
+          - id: shop-service-route
+            uri: lb://shop-service
+            predicates:
+              - Path=/api/shop/**
 
 eureka:
   client:
