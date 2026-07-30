@@ -8,7 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+import java.math.BigDecimal;
+import org.springframework.web.multipart.MultipartFile;
+import com.example.shopservice.service.ImageUploadService;
 @RestController
 @RequestMapping("/api/shop/products")
 public class ProductController {
@@ -36,10 +38,19 @@ public class ProductController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // POST /api/shop/products (Secured for Admins only)
-    @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product, 
-                                                 @RequestHeader(value = "X-User-Role", required = false) String role) {
+    @Autowired
+    private ImageUploadService imageUploadService;
+
+    // POST /api/shop/products 
+    @PostMapping(consumes = {"multipart/form-data"})
+    public ResponseEntity<Product> createProduct(
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("price") BigDecimal price,
+            @RequestParam("category") String category,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+        
         if (role == null) {
             System.out.println("DEBUG: X-User-Role header is MISSING!");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -48,6 +59,19 @@ public class ProductController {
             System.out.println("DEBUG: Role is " + role + " - Kicking them out!");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+
+        Product product = new Product();
+        product.setName(name);
+        product.setDescription(description);
+        product.setPrice(price);
+        product.setCategory(category);
+
+        // Upload image to Cloudinary if provided
+        if (image != null && !image.isEmpty()) {
+            String imageUrl = imageUploadService.uploadImage(image);
+            product.setImageUrl(imageUrl);
+        }
+
         Product savedProduct = productService.createProduct(product);
         return ResponseEntity.ok(savedProduct);
     }
