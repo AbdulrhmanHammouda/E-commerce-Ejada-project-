@@ -32,7 +32,7 @@ public class CartService {
                 .orElseThrow(() -> new RuntimeException("Product not found!"));
 
         // 2. Check if the user already has this item in their cart
-        Optional<CartItem> existingItemOpt = cartItemRepository.findByUserIdAndProductId(userId, productId);
+        Optional<CartItem> existingItemOpt = cartItemRepository.findByUserIdAndProduct_Id(userId, productId);
 
         if (existingItemOpt.isPresent()) {
             // 3a. If they do, just increase the quantity
