@@ -57,8 +57,8 @@ public class DtoMapper {
             res.setProductId(item.getProduct().getId());
             res.setProductName(item.getProduct().getName());
             res.setQuantity(item.getQuantity());
-            res.setPrice(item.getPrice());
-            res.setSubTotal(item.getPrice().multiply(new BigDecimal(item.getQuantity())));
+            res.setPrice(item.getPriceAtPurchase());
+            res.setSubTotal(item.getPriceAtPurchase().multiply(new BigDecimal(item.getQuantity())));
             return res;
         }).collect(Collectors.toList());
 
