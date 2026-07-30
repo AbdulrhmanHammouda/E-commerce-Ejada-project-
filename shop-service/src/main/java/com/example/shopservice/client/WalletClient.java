@@ -1,6 +1,6 @@
 package com.example.shopservice.client;
 
-import com.example.shopservice.dto.WithdrawRequestDto;
+import com.example.shopservice.dto.request.WithdrawRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +15,7 @@ public interface WalletClient {
 
     @PostMapping("/api/wallet/withdraw")
     ResponseEntity<Map<String, Object>> withdrawFunds(
-            @RequestBody WithdrawRequestDto request,
+            @RequestBody WithdrawRequest request,
             @RequestHeader("X-User-Id") Long userId
     );
 }

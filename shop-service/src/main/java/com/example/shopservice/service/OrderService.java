@@ -1,7 +1,7 @@
 package com.example.shopservice.service;
 
 import com.example.shopservice.client.WalletClient;
-import com.example.shopservice.dto.WithdrawRequestDto;
+import com.example.shopservice.dto.request.WithdrawRequest;
 import com.example.shopservice.entity.CartItem;
 import com.example.shopservice.entity.Order;
 import com.example.shopservice.entity.OrderItem;
@@ -44,8 +44,8 @@ public class OrderService {
 
         // 3. Talk to the Wallet Service! Attempt to withdraw the funds.
         try {
-            WithdrawRequestDto withdrawRequest = new WithdrawRequestDto(totalCost, "Checkout for " + cartItems.size() + " items");
-            walletClient.withdrawFunds(withdrawRequest, userId);
+            WithdrawRequest withdrawRequest = new WithdrawRequest(totalCost, "Checkout for " + cartItems.size() + " items");
+            walletClient.withdrawFunds(userId, withdrawRequest);
         } catch (FeignException e) {
             // If WalletService returns 400 (Insufficient Funds), OpenFeign throws an exception
             throw new RuntimeException("Checkout failed! You don't have enough money in your wallet.");
