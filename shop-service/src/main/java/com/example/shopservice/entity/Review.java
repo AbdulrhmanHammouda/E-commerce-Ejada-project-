@@ -25,7 +25,7 @@ public class Review {
     private String customerName;
 
     @Column(nullable = false)
-    private Integer rating; // 1 to 5 stars
+    private Double rating; // 1.0 to 5.0 stars
 
     @Column(length = 2000, nullable = false)
     private String reviewText;
@@ -34,5 +34,11 @@ public class Review {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
     
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

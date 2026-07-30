@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class ReviewResponse {
     private Long id;
     private String customerName;
-    private Integer rating;
+    private Double rating;
     private String reviewText;
     private Long productId;
     private LocalDateTime createdAt;

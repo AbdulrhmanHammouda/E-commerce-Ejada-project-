@@ -99,7 +99,7 @@ public class DtoMapper {
                 .collect(Collectors.toList());
 
         double average = reviews.stream()
-                .mapToInt(Review::getRating)
+                .mapToDouble(Review::getRating)
                 .average()
                 .orElse(0.0);
 
