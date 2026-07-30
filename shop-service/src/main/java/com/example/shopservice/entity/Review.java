@@ -22,6 +22,9 @@ public class Review {
     private Long id;
 
     @Column(nullable = false)
+    private Long userId;
+
+    @Column(nullable = false)
     private String customerName;
 
     @Column(nullable = false)

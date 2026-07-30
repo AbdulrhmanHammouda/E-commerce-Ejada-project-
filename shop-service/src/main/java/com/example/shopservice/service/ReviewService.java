@@ -22,10 +22,16 @@ public class ReviewService {
         return reviewRepository.findByProductIdOrderByCreatedAtDesc(productId);
     }
 
-    public Review addReview(Long productId, Review review) {
+    public Review addReview(Long userId, Long productId, Review review) {
+        if (reviewRepository.findByUserIdAndProductId(userId, productId).isPresent()) {
+            throw new RuntimeException("User has already reviewed this product");
+        }
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+        
         review.setProduct(product);
+        review.setUserId(userId);
         return reviewRepository.save(review);
     }
 }

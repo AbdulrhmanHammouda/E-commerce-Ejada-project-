@@ -85,6 +85,7 @@ public class DtoMapper {
         if (review == null) return null;
         ReviewResponse res = new ReviewResponse();
         res.setId(review.getId());
+        res.setUserId(review.getUserId());
         res.setCustomerName(review.getCustomerName());
         res.setRating(review.getRating());
         res.setReviewText(review.getReviewText());

@@ -34,9 +34,10 @@ public class ReviewController {
     // POST /api/shop/reviews/{productId}
     @PostMapping("/{productId}")
     public ResponseEntity<ApiResponse> addReview(
+            @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long productId,
             @RequestBody Review review) {
-        Review savedReview = reviewService.addReview(productId, review);
+        Review savedReview = reviewService.addReview(userId, productId, review);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Review added successfully", DtoMapper.mapToReviewResponse(savedReview)));
     }
 }
