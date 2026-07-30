@@ -19,11 +19,11 @@ public class WishlistService {
     @Autowired
     private ProductRepository productRepository;
 
-    public List<Wishlist> getUserWishlist(String userId) {
+    public List<Wishlist> getUserWishlist(Long userId) {
         return wishlistRepository.findByUserId(userId);
     }
 
-    public Wishlist addToWishlist(String userId, Long productId) {
+    public Wishlist addToWishlist(Long userId, Long productId) {
         // Check if product exists
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -40,7 +40,7 @@ public class WishlistService {
         return wishlistRepository.save(wishlist);
     }
 
-    public void removeFromWishlist(String userId, Long productId) {
+    public void removeFromWishlist(Long userId, Long productId) {
         Optional<Wishlist> existing = wishlistRepository.findByUserIdAndProductId(userId, productId);
         existing.ifPresent(wishlist -> wishlistRepository.delete(wishlist));
     }

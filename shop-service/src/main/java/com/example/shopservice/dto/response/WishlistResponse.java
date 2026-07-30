@@ -11,6 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class WishlistResponse {
     private Long id;
-    private String userId;
+    private Long userId;
     private ProductResponse product;
 }

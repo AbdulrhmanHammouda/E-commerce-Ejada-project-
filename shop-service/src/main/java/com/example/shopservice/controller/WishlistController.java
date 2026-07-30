@@ -20,11 +20,11 @@ public class WishlistController {
     @Autowired
     private WishlistService wishlistService;
 
-    // GET /api/shop/wishlists?userId=123
+    // GET /api/shop/wishlists
     @GetMapping
-    public ResponseEntity<ApiResponse> getUserWishlist(@RequestParam String userId) {
-        if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, "User ID is required", null));
+    public ResponseEntity<ApiResponse> getUserWishlist(@RequestHeader("X-User-Id") Long userId) {
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, "User ID header is required", null));
         }
         List<Wishlist> wishlists = wishlistService.getUserWishlist(userId);
         List<WishlistResponse> responses = wishlists.stream()
@@ -33,25 +33,25 @@ public class WishlistController {
         return ResponseEntity.ok(new ApiResponse(true, "Wishlist retrieved successfully", responses));
     }
 
-    // POST /api/shop/wishlists?userId=123&productId=1
-    @PostMapping
+    // POST /api/shop/wishlists/{productId}
+    @PostMapping("/{productId}")
     public ResponseEntity<ApiResponse> addToWishlist(
-            @RequestParam String userId,
-            @RequestParam Long productId) {
-        if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, "User ID is required", null));
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable Long productId) {
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, "User ID header is required", null));
         }
         Wishlist wishlist = wishlistService.addToWishlist(userId, productId);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Added to wishlist successfully", DtoMapper.mapToWishlistResponse(wishlist)));
     }
 
-    // DELETE /api/shop/wishlists?userId=123&productId=1
-    @DeleteMapping
+    // DELETE /api/shop/wishlists/{productId}
+    @DeleteMapping("/{productId}")
     public ResponseEntity<ApiResponse> removeFromWishlist(
-            @RequestParam String userId,
-            @RequestParam Long productId) {
-        if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, "User ID is required", null));
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable Long productId) {
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, "User ID header is required", null));
         }
         wishlistService.removeFromWishlist(userId, productId);
         return ResponseEntity.ok(new ApiResponse(true, "Removed from wishlist successfully", null));

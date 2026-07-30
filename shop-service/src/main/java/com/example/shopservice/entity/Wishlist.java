@@ -18,9 +18,9 @@ public class Wishlist {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // We store userId as a string or long, assuming it comes from the auth token/header
+    // We store userId as a long, assuming it comes from the auth token/header
     @Column(nullable = false)
-    private String userId;
+    private Long userId;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", nullable = false)
