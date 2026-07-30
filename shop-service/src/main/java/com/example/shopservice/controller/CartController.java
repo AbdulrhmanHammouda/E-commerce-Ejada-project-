@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import com.example.shopservice.dto.response.ApiResponse;
 
 @RestController
 @RequestMapping("/api/shop/cart")
@@ -20,19 +21,19 @@ public class CartController {
 
     // GET /api/shop/cart -> View my cart
     @GetMapping
-    public ResponseEntity<List<CartItem>> viewMyCart(@RequestHeader("X-User-Id") Long userId) {
+    public ResponseEntity<ApiResponse> viewMyCart(@RequestHeader("X-User-Id") Long userId) {
         List<CartItem> myCart = cartService.viewMyCart(userId);
-        return ResponseEntity.ok(myCart);
+        return ResponseEntity.ok(new ApiResponse(true, "Cart retrieved successfully", myCart));
     }
 
     // POST /api/shop/cart/add/{productId}?qty=2 -> Add item to cart
     @PostMapping("/add/{productId}")
-    public ResponseEntity<String> addToCart(
+    public ResponseEntity<ApiResponse> addToCart(
             @PathVariable Long productId, 
             @RequestHeader("X-User-Id") Long userId,
             @RequestParam(required = false, defaultValue = "1") int qty) {
 
         String resultMessage = cartService.addToCart(userId, productId, qty);
-        return ResponseEntity.ok(resultMessage);
+        return ResponseEntity.ok(new ApiResponse(true, resultMessage, null));
     }
 }

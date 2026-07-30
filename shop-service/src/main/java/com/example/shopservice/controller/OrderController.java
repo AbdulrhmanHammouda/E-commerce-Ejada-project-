@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import com.example.shopservice.dto.response.ApiResponse;
 
 @RestController
 @RequestMapping("/api/shop/orders")
@@ -18,13 +19,13 @@ public class OrderController {
     }
 
     @PostMapping("/checkout")
-    public ResponseEntity<Order> checkout(@RequestHeader("X-User-Id") Long userId) {
+    public ResponseEntity<ApiResponse> checkout(@RequestHeader("X-User-Id") Long userId) {
         Order savedOrder = orderService.checkout(userId);
-        return ResponseEntity.ok(savedOrder);
+        return ResponseEntity.ok(new ApiResponse(true, "Checkout successful", savedOrder));
     }
 
     @GetMapping
-    public ResponseEntity<List<Order>> getMyOrders(@RequestHeader("X-User-Id") Long userId) {
-        return ResponseEntity.ok(orderService.getOrderHistory(userId));
+    public ResponseEntity<ApiResponse> getMyOrders(@RequestHeader("X-User-Id") Long userId) {
+        return ResponseEntity.ok(new ApiResponse(true, "Orders retrieved successfully", orderService.getOrderHistory(userId)));
     }
 }
