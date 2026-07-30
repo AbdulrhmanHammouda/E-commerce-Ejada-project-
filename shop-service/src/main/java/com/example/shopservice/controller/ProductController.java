@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import com.example.shopservice.dto.response.ProductResponse;
 import com.example.shopservice.dto.response.ApiResponse;
+import com.example.shopservice.mapper.DtoMapper;
 import java.util.stream.Collectors;
 import java.math.BigDecimal;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,7 +32,7 @@ public class ProductController {
             
         List<Product> products = productService.getProducts(search, audience, isBestSeller, isPopular, isNew);
         List<ProductResponse> responseList = products.stream()
-                .map(this::mapToResponse)
+                .map(DtoMapper::mapToProductResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(new ApiResponse(true, "Products retrieved successfully", responseList));
     }
@@ -40,7 +41,7 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> getProductById(@PathVariable Long id) {
         return productService.getProductById(id)
-                .map(product -> ResponseEntity.ok(new ApiResponse(true, "Product retrieved successfully", mapToResponse(product))))
+                .map(product -> ResponseEntity.ok(new ApiResponse(true, "Product retrieved successfully", DtoMapper.mapToProductResponse(product))))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, "Product not found", null)));
     }
 
@@ -70,7 +71,7 @@ public class ProductController {
         product.setCategory(category);
 
         Product savedProduct = productService.createProduct(product, image);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Product created successfully", mapToResponse(savedProduct)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Product created successfully", DtoMapper.mapToProductResponse(savedProduct)));
     }
 
     // PUT /api/shop/products/{id}
@@ -95,21 +96,6 @@ public class ProductController {
         if (category != null) productUpdates.setCategory(category);
 
         Product updatedProduct = productService.updateProduct(id, productUpdates, image);
-        return ResponseEntity.ok(new ApiResponse(true, "Product updated successfully", mapToResponse(updatedProduct)));
-    }
-
-    private ProductResponse mapToResponse(Product product) {
-        return new ProductResponse(
-                product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice(),
-                product.getCategory(),
-                product.getImageUrl(),
-                product.getTargetAudience(),
-                product.isBestSeller(),
-                product.isMostPopular(),
-                product.isNewArrival()
-        );
+        return ResponseEntity.ok(new ApiResponse(true, "Product updated successfully", DtoMapper.mapToProductResponse(updatedProduct)));
     }
 }

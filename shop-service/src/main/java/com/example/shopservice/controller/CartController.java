@@ -13,9 +13,8 @@ import java.util.List;
 import com.example.shopservice.dto.request.AddToCartRequest;
 import com.example.shopservice.dto.response.ApiResponse;
 import com.example.shopservice.dto.response.CartResponse;
-import com.example.shopservice.dto.response.CartItemResponse;
-import java.math.BigDecimal;
-import java.util.stream.Collectors;
+import com.example.shopservice.mapper.DtoMapper;
+import com.example.shopservice.mapper.DtoMapper;
 
 @RestController
 @RequestMapping("/api/shop/cart")
@@ -28,7 +27,7 @@ public class CartController {
     @GetMapping
     public ResponseEntity<ApiResponse> viewMyCart(@RequestHeader("X-User-Id") Long userId) {
         List<CartItem> myCart = cartService.viewMyCart(userId);
-        CartResponse cartResponse = mapToCartResponse(userId, myCart);
+        CartResponse cartResponse = DtoMapper.mapToCartResponse(userId, myCart);
         return ResponseEntity.ok(new ApiResponse(true, "Cart retrieved successfully", cartResponse));
     }
 
@@ -40,29 +39,5 @@ public class CartController {
 
         String resultMessage = cartService.addToCart(userId, request.getProductId(), request.getQuantity());
         return ResponseEntity.ok(new ApiResponse(true, resultMessage, null));
-    }
-
-    private CartResponse mapToCartResponse(Long userId, List<CartItem> items) {
-        List<CartItemResponse> itemResponses = items.stream().map(item -> {
-            CartItemResponse res = new CartItemResponse();
-            res.setId(item.getId());
-            res.setProductId(item.getProduct().getId());
-            res.setProductName(item.getProduct().getName());
-            res.setProductPrice(item.getProduct().getPrice());
-            res.setImageUrl(item.getProduct().getImageUrl());
-            res.setQuantity(item.getQuantity());
-            res.setSubTotal(item.getProduct().getPrice().multiply(new BigDecimal(item.getQuantity())));
-            return res;
-        }).collect(Collectors.toList());
-
-        BigDecimal total = itemResponses.stream()
-                .map(CartItemResponse::getSubTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        CartResponse cartResponse = new CartResponse();
-        cartResponse.setUserId(userId);
-        cartResponse.setItems(itemResponses);
-        cartResponse.setTotalPrice(total);
-        return cartResponse;
     }
 }
