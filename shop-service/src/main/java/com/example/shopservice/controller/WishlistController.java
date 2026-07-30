@@ -8,7 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import com.example.shopservice.dto.response.ApiResponse;
+import com.example.shopservice.dto.response.WishlistResponse;
+import com.example.shopservice.dto.response.ProductResponse;
+import com.example.shopservice.entity.Product;
 
 @RestController
 @RequestMapping("/api/shop/wishlists")
@@ -23,7 +27,11 @@ public class WishlistController {
         if (userId == null || userId.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, "User ID is required", null));
         }
-        return ResponseEntity.ok(new ApiResponse(true, "Wishlist retrieved successfully", wishlistService.getUserWishlist(userId)));
+        List<Wishlist> wishlists = wishlistService.getUserWishlist(userId);
+        List<WishlistResponse> responses = wishlists.stream()
+                .map(this::mapToWishlistResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(new ApiResponse(true, "Wishlist retrieved successfully", responses));
     }
 
     // POST /api/shop/wishlists?userId=123&productId=1
@@ -35,7 +43,20 @@ public class WishlistController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, "User ID is required", null));
         }
         Wishlist wishlist = wishlistService.addToWishlist(userId, productId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Added to wishlist successfully", wishlist));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Added to wishlist successfully", mapToWishlistResponse(wishlist)));
+    }
+
+    private WishlistResponse mapToWishlistResponse(Wishlist wishlist) {
+        WishlistResponse res = new WishlistResponse();
+        res.setId(wishlist.getId());
+        res.setUserId(wishlist.getUserId());
+        Product p = wishlist.getProduct();
+        if (p != null) {
+            res.setProduct(new ProductResponse(
+                    p.getId(), p.getName(), p.getDescription(), p.getPrice(), p.getCategory(), p.getImageUrl(), p.getTargetAudience(), p.isBestSeller(), p.isMostPopular(), p.isNewArrival()
+            ));
+        }
+        return res;
     }
 
     // DELETE /api/shop/wishlists?userId=123&productId=1

@@ -18,4 +18,8 @@ public class ProductResponse {
     private BigDecimal price;
     private String category;
     private String imageUrl;
+    private String targetAudience;
+    private boolean isBestSeller;
+    private boolean isMostPopular;
+    private boolean isNewArrival;
 }

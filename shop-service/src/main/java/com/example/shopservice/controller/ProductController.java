@@ -8,9 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import com.example.shopservice.dto.response.ProductResponse;
+import com.example.shopservice.dto.response.ApiResponse;
+import java.util.stream.Collectors;
 import java.math.BigDecimal;
 import org.springframework.web.multipart.MultipartFile;
-import com.example.shopservice.dto.response.ApiResponse;
 @RestController
 @RequestMapping("/api/shop/products")
 public class ProductController {
@@ -28,14 +30,17 @@ public class ProductController {
             @RequestParam(required = false) Boolean isNew) {
             
         List<Product> products = productService.getProducts(search, audience, isBestSeller, isPopular, isNew);
-        return ResponseEntity.ok(new ApiResponse(true, "Products retrieved successfully", products));
+        List<ProductResponse> responseList = products.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(new ApiResponse(true, "Products retrieved successfully", responseList));
     }
 
     // GET /api/shop/products/{id}
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> getProductById(@PathVariable Long id) {
         return productService.getProductById(id)
-                .map(product -> ResponseEntity.ok(new ApiResponse(true, "Product retrieved successfully", product)))
+                .map(product -> ResponseEntity.ok(new ApiResponse(true, "Product retrieved successfully", mapToResponse(product))))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, "Product not found", null)));
     }
 
@@ -65,7 +70,7 @@ public class ProductController {
         product.setCategory(category);
 
         Product savedProduct = productService.createProduct(product, image);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Product created successfully", savedProduct));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Product created successfully", mapToResponse(savedProduct)));
     }
 
     // PUT /api/shop/products/{id}
@@ -90,6 +95,21 @@ public class ProductController {
         if (category != null) productUpdates.setCategory(category);
 
         Product updatedProduct = productService.updateProduct(id, productUpdates, image);
-        return ResponseEntity.ok(new ApiResponse(true, "Product updated successfully", updatedProduct));
+        return ResponseEntity.ok(new ApiResponse(true, "Product updated successfully", mapToResponse(updatedProduct)));
+    }
+
+    private ProductResponse mapToResponse(Product product) {
+        return new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getCategory(),
+                product.getImageUrl(),
+                product.getTargetAudience(),
+                product.isBestSeller(),
+                product.isMostPopular(),
+                product.isNewArrival()
+        );
     }
 }
