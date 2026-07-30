@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.math.BigDecimal;
 import org.springframework.web.multipart.MultipartFile;
+import com.example.shopservice.dto.response.ApiResponse;
 @RestController
 @RequestMapping("/api/shop/products")
 public class ProductController {
@@ -19,7 +20,7 @@ public class ProductController {
 
     // GET /api/shop/products (with optional UI filters)
     @GetMapping
-    public ResponseEntity<List<Product>> getProducts(
+    public ResponseEntity<ApiResponse> getProducts(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String audience,
             @RequestParam(required = false) Boolean isBestSeller,
@@ -27,20 +28,20 @@ public class ProductController {
             @RequestParam(required = false) Boolean isNew) {
             
         List<Product> products = productService.getProducts(search, audience, isBestSeller, isPopular, isNew);
-        return ResponseEntity.ok(products);
+        return ResponseEntity.ok(new ApiResponse(true, "Products retrieved successfully", products));
     }
 
     // GET /api/shop/products/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse> getProductById(@PathVariable Long id) {
         return productService.getProductById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(product -> ResponseEntity.ok(new ApiResponse(true, "Product retrieved successfully", product)))
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, "Product not found", null)));
     }
 
     // POST /api/shop/products 
     @PostMapping(consumes = {"multipart/form-data"})
-    public ResponseEntity<Product> createProduct(
+    public ResponseEntity<ApiResponse> createProduct(
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam("price") BigDecimal price,
@@ -50,11 +51,11 @@ public class ProductController {
         
         if (role == null) {
             System.out.println("DEBUG: X-User-Role header is MISSING!");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, "Unauthorized", null));
         }
         if (!"ADMIN".equals(role)) {
             System.out.println("DEBUG: Role is " + role + " - Kicking them out!");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(false, "Forbidden", null));
         }
 
         Product product = new Product();
@@ -64,12 +65,12 @@ public class ProductController {
         product.setCategory(category);
 
         Product savedProduct = productService.createProduct(product, image);
-        return ResponseEntity.ok(savedProduct);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Product created successfully", savedProduct));
     }
 
     // PUT /api/shop/products/{id}
     @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
-    public ResponseEntity<Product> updateProduct(
+    public ResponseEntity<ApiResponse> updateProduct(
             @PathVariable Long id,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
@@ -79,7 +80,7 @@ public class ProductController {
             @RequestHeader(value = "X-User-Role", required = false) String role) {
         
         if (role == null || !"ADMIN".equals(role)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(false, "Forbidden", null));
         }
 
         Product productUpdates = new Product();
@@ -90,9 +91,9 @@ public class ProductController {
 
         try {
             Product updatedProduct = productService.updateProduct(id, productUpdates, image);
-            return ResponseEntity.ok(updatedProduct);
+            return ResponseEntity.ok(new ApiResponse(true, "Product updated successfully", updatedProduct));
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, e.getMessage(), null));
         }
     }
 }

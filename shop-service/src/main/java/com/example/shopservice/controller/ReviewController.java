@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.http.HttpStatus;
+import com.example.shopservice.dto.response.ApiResponse;
 
 @RestController
 @RequestMapping("/api/shop/reviews")
@@ -17,20 +19,20 @@ public class ReviewController {
 
     // GET /api/shop/reviews?productId=1
     @GetMapping
-    public ResponseEntity<List<Review>> getProductReviews(@RequestParam Long productId) {
-        return ResponseEntity.ok(reviewService.getProductReviews(productId));
+    public ResponseEntity<ApiResponse> getProductReviews(@RequestParam Long productId) {
+        return ResponseEntity.ok(new ApiResponse(true, "Reviews retrieved successfully", reviewService.getProductReviews(productId)));
     }
 
     // POST /api/shop/reviews?productId=1
     @PostMapping
-    public ResponseEntity<Review> addReview(
+    public ResponseEntity<ApiResponse> addReview(
             @RequestParam Long productId,
             @RequestBody Review review) {
         try {
             Review savedReview = reviewService.addReview(productId, review);
-            return ResponseEntity.ok(savedReview);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Review added successfully", savedReview));
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, e.getMessage(), null));
         }
     }
 }

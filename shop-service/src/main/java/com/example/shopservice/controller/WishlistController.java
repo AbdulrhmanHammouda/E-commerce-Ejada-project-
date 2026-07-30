@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import com.example.shopservice.dto.response.ApiResponse;
 
 @RestController
 @RequestMapping("/api/shop/wishlists")
@@ -18,38 +19,38 @@ public class WishlistController {
 
     // GET /api/shop/wishlists?userId=123
     @GetMapping
-    public ResponseEntity<List<Wishlist>> getUserWishlist(@RequestParam String userId) {
+    public ResponseEntity<ApiResponse> getUserWishlist(@RequestParam String userId) {
         if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, "User ID is required", null));
         }
-        return ResponseEntity.ok(wishlistService.getUserWishlist(userId));
+        return ResponseEntity.ok(new ApiResponse(true, "Wishlist retrieved successfully", wishlistService.getUserWishlist(userId)));
     }
 
     // POST /api/shop/wishlists?userId=123&productId=1
     @PostMapping
-    public ResponseEntity<Wishlist> addToWishlist(
+    public ResponseEntity<ApiResponse> addToWishlist(
             @RequestParam String userId,
             @RequestParam Long productId) {
         if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, "User ID is required", null));
         }
         try {
             Wishlist wishlist = wishlistService.addToWishlist(userId, productId);
-            return ResponseEntity.ok(wishlist);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Added to wishlist successfully", wishlist));
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, e.getMessage(), null));
         }
     }
 
     // DELETE /api/shop/wishlists?userId=123&productId=1
     @DeleteMapping
-    public ResponseEntity<Void> removeFromWishlist(
+    public ResponseEntity<ApiResponse> removeFromWishlist(
             @RequestParam String userId,
             @RequestParam Long productId) {
         if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, "User ID is required", null));
         }
         wishlistService.removeFromWishlist(userId, productId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new ApiResponse(true, "Removed from wishlist successfully", null));
     }
 }
