@@ -19,8 +19,10 @@ public class ProductService {
     private ImageUploadService imageUploadService;
 
     // Get products with optional filters
-    public List<Product> getProducts(String audience, Boolean isBestSeller, Boolean isMostPopular, Boolean isNewArrival) {
-        if (audience != null && !audience.isEmpty()) {
+    public List<Product> getProducts(String search, String audience, Boolean isBestSeller, Boolean isMostPopular, Boolean isNewArrival) {
+        if (search != null && !search.isEmpty()) {
+            return productRepository.findByNameContainingIgnoreCase(search);
+        } else if (audience != null && !audience.isEmpty()) {
             return productRepository.findByTargetAudienceIgnoreCase(audience);
         } else if (Boolean.TRUE.equals(isBestSeller)) {
             return productRepository.findByIsBestSellerTrue();
@@ -55,11 +57,7 @@ public class ProductService {
             if (updatedProduct.getDescription() != null) existingProduct.setDescription(updatedProduct.getDescription());
             if (updatedProduct.getPrice() != null) existingProduct.setPrice(updatedProduct.getPrice());
             if (updatedProduct.getCategory() != null) existingProduct.setCategory(updatedProduct.getCategory());
-            if (updatedProduct.getStockQuantity() != null) existingProduct.setStockQuantity(updatedProduct.getStockQuantity());
             if (updatedProduct.getTargetAudience() != null) existingProduct.setTargetAudience(updatedProduct.getTargetAudience());
-            if (updatedProduct.getIsBestSeller() != null) existingProduct.setIsBestSeller(updatedProduct.getIsBestSeller());
-            if (updatedProduct.getIsMostPopular() != null) existingProduct.setIsMostPopular(updatedProduct.getIsMostPopular());
-            if (updatedProduct.getIsNewArrival() != null) existingProduct.setIsNewArrival(updatedProduct.getIsNewArrival());
             
             // Upload new image if provided
             if (image != null && !image.isEmpty()) {

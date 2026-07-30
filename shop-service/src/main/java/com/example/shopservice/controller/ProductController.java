@@ -20,12 +20,13 @@ public class ProductController {
     // GET /api/shop/products (with optional UI filters)
     @GetMapping
     public ResponseEntity<List<Product>> getProducts(
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) String audience,
             @RequestParam(required = false) Boolean isBestSeller,
             @RequestParam(required = false) Boolean isPopular,
             @RequestParam(required = false) Boolean isNew) {
             
-        List<Product> products = productService.getProducts(audience, isBestSeller, isPopular, isNew);
+        List<Product> products = productService.getProducts(search, audience, isBestSeller, isPopular, isNew);
         return ResponseEntity.ok(products);
     }
 

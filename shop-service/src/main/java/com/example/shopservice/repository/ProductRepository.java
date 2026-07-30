@@ -9,6 +9,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByCategory(String category);
     
     // UI Filters
+    List<Product> findByNameContainingIgnoreCase(String name);
     List<Product> findByTargetAudienceIgnoreCase(String targetAudience);
     List<Product> findByIsBestSellerTrue();
     List<Product> findByIsMostPopularTrue();
