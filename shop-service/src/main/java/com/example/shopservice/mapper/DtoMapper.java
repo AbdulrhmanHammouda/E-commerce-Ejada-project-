@@ -92,4 +92,25 @@ public class DtoMapper {
         res.setCreatedAt(review.getCreatedAt());
         return res;
     }
+
+    public static ProductReviewsResponse mapToProductReviewsResponse(Long productId, List<Review> reviews) {
+        List<ReviewResponse> reviewResponses = reviews.stream()
+                .map(DtoMapper::mapToReviewResponse)
+                .collect(Collectors.toList());
+
+        double average = reviews.stream()
+                .mapToInt(Review::getRating)
+                .average()
+                .orElse(0.0);
+
+        // Round to 1 decimal place
+        average = Math.round(average * 10.0) / 10.0;
+
+        ProductReviewsResponse res = new ProductReviewsResponse();
+        res.setProductId(productId);
+        res.setReviews(reviewResponses);
+        res.setTotalReviews(reviews.size());
+        res.setAverageRating(average);
+        return res;
+    }
 }
