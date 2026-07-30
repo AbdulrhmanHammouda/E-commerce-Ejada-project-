@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.math.BigDecimal;
 import org.springframework.web.multipart.MultipartFile;
-import com.example.shopservice.service.ImageUploadService;
 @RestController
 @RequestMapping("/api/shop/products")
 public class ProductController {
@@ -38,9 +37,6 @@ public class ProductController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Autowired
-    private ImageUploadService imageUploadService;
-
     // POST /api/shop/products 
     @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<Product> createProduct(
@@ -66,13 +62,36 @@ public class ProductController {
         product.setPrice(price);
         product.setCategory(category);
 
-        // Upload image to Cloudinary if provided
-        if (image != null && !image.isEmpty()) {
-            String imageUrl = imageUploadService.uploadImage(image);
-            product.setImageUrl(imageUrl);
+        Product savedProduct = productService.createProduct(product, image);
+        return ResponseEntity.ok(savedProduct);
+    }
+
+    // PUT /api/shop/products/{id}
+    @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
+    public ResponseEntity<Product> updateProduct(
+            @PathVariable Long id,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "price", required = false) BigDecimal price,
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+        
+        if (role == null || !"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        Product savedProduct = productService.createProduct(product);
-        return ResponseEntity.ok(savedProduct);
+        Product productUpdates = new Product();
+        if (name != null) productUpdates.setName(name);
+        if (description != null) productUpdates.setDescription(description);
+        if (price != null) productUpdates.setPrice(price);
+        if (category != null) productUpdates.setCategory(category);
+
+        try {
+            Product updatedProduct = productService.updateProduct(id, productUpdates, image);
+            return ResponseEntity.ok(updatedProduct);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
