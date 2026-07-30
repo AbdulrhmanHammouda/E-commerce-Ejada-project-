@@ -28,11 +28,7 @@ public class ReviewController {
     public ResponseEntity<ApiResponse> addReview(
             @RequestParam Long productId,
             @RequestBody Review review) {
-        try {
-            Review savedReview = reviewService.addReview(productId, review);
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Review added successfully", savedReview));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, e.getMessage(), null));
-        }
+        Review savedReview = reviewService.addReview(productId, review);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Review added successfully", savedReview));
     }
 }

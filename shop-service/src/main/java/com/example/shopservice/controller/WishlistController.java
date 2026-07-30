@@ -34,12 +34,8 @@ public class WishlistController {
         if (userId == null || userId.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, "User ID is required", null));
         }
-        try {
-            Wishlist wishlist = wishlistService.addToWishlist(userId, productId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Added to wishlist successfully", wishlist));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, e.getMessage(), null));
-        }
+        Wishlist wishlist = wishlistService.addToWishlist(userId, productId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Added to wishlist successfully", wishlist));
     }
 
     // DELETE /api/shop/wishlists?userId=123&productId=1

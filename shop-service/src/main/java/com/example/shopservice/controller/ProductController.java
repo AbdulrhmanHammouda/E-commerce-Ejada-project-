@@ -89,11 +89,7 @@ public class ProductController {
         if (price != null) productUpdates.setPrice(price);
         if (category != null) productUpdates.setCategory(category);
 
-        try {
-            Product updatedProduct = productService.updateProduct(id, productUpdates, image);
-            return ResponseEntity.ok(new ApiResponse(true, "Product updated successfully", updatedProduct));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, e.getMessage(), null));
-        }
+        Product updatedProduct = productService.updateProduct(id, productUpdates, image);
+        return ResponseEntity.ok(new ApiResponse(true, "Product updated successfully", updatedProduct));
     }
 }
