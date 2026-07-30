@@ -51,7 +51,7 @@ public class DtoMapper {
 
     public static OrderResponse mapToOrderResponse(Order order) {
         if (order == null) return null;
-        List<OrderItemResponse> itemResponses = order.getItems().stream().map(item -> {
+        List<OrderItemResponse> itemResponses = order.getOrderItems().stream().map(item -> {
             OrderItemResponse res = new OrderItemResponse();
             res.setId(item.getId());
             res.setProductId(item.getProduct().getId());
@@ -66,7 +66,7 @@ public class DtoMapper {
         res.setId(order.getId());
         res.setUserId(order.getUserId());
         res.setTotalPrice(order.getTotalAmount());
-        res.setStatus(order.getStatus().name());
+        res.setStatus(order.getStatus());
         res.setCreatedAt(order.getCreatedAt());
         res.setItems(itemResponses);
         return res;
