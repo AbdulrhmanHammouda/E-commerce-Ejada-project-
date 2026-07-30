@@ -94,12 +94,19 @@ public class DtoMapper {
         return res;
     }
 
-    public static ProductReviewsResponse mapToProductReviewsResponse(Long productId, List<Review> reviews) {
-        List<ReviewResponse> reviewResponses = reviews.stream()
+    public static ProductReviewsResponse mapToProductReviewsResponse(Long productId, org.springframework.data.domain.Page<Review> reviewPage) {
+        List<ReviewResponse> reviewResponses = reviewPage.getContent().stream()
                 .map(DtoMapper::mapToReviewResponse)
                 .collect(Collectors.toList());
 
-        double average = reviews.stream()
+        PaginatedResponse<ReviewResponse> paginatedReviews = new PaginatedResponse<>(
+                reviewResponses,
+                reviewPage.getNumber(),
+                reviewPage.getTotalPages(),
+                reviewPage.getTotalElements()
+        );
+
+        double average = reviewPage.getContent().stream()
                 .mapToDouble(Review::getRating)
                 .average()
                 .orElse(0.0);
@@ -109,8 +116,9 @@ public class DtoMapper {
 
         ProductReviewsResponse res = new ProductReviewsResponse();
         res.setProductId(productId);
-        res.setReviews(reviewResponses);
-        res.setTotalReviews(reviews.size());
+        res.setReviews(paginatedReviews);
+        // Total reviews count from the database overall
+        res.setTotalReviews((int) reviewPage.getTotalElements());
         res.setAverageRating(average);
         return res;
     }

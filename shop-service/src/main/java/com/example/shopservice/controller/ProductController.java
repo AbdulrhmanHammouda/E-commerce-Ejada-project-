@@ -21,20 +21,33 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    // GET /api/shop/products (with optional UI filters)
+    // GET /api/shop/products (with optional UI filters and pagination)
     @GetMapping
     public ResponseEntity<ApiResponse> getProducts(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String audience,
             @RequestParam(required = false) Boolean isBestSeller,
             @RequestParam(required = false) Boolean isPopular,
-            @RequestParam(required = false) Boolean isNew) {
+            @RequestParam(required = false) Boolean isNew,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
             
-        List<Product> products = productService.getProducts(search, audience, isBestSeller, isPopular, isNew);
-        List<ProductResponse> responseList = products.stream()
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        org.springframework.data.domain.Page<Product> productPage = productService.getProducts(search, audience, isBestSeller, isPopular, isNew, pageable);
+        
+        List<ProductResponse> responseList = productPage.getContent().stream()
                 .map(DtoMapper::mapToProductResponse)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(new ApiResponse(true, "Products retrieved successfully", responseList));
+                
+        com.example.shopservice.dto.response.PaginatedResponse<ProductResponse> paginatedResponse = 
+            new com.example.shopservice.dto.response.PaginatedResponse<>(
+                responseList,
+                productPage.getNumber(),
+                productPage.getTotalPages(),
+                productPage.getTotalElements()
+            );
+            
+        return ResponseEntity.ok(new ApiResponse(true, "Products retrieved successfully", paginatedResponse));
     }
 
     // GET /api/shop/products/{id}

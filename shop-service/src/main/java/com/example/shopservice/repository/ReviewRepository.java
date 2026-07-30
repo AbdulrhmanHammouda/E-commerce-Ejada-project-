@@ -6,7 +6,10 @@ import java.util.List;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    List<Review> findByProductIdOrderByCreatedAtDesc(Long productId);
+    Page<Review> findByProductIdOrderByCreatedAtDesc(Long productId, Pageable pageable);
     Optional<Review> findByUserIdAndProductId(Long userId, Long productId);
 }

@@ -5,13 +5,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    List<Product> findByCategory(String category);
+    Page<Product> findByCategory(String category, Pageable pageable);
     
     // UI Filters
-    List<Product> findByNameContainingIgnoreCase(String name);
-    List<Product> findByTargetAudienceIgnoreCase(String targetAudience);
-    List<Product> findByIsBestSellerTrue();
-    List<Product> findByIsMostPopularTrue();
-    List<Product> findByIsNewArrivalTrue();
+    Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
+    Page<Product> findByTargetAudienceIgnoreCase(String targetAudience, Pageable pageable);
+    Page<Product> findByIsBestSellerTrue(Pageable pageable);
+    Page<Product> findByIsMostPopularTrue(Pageable pageable);
+    Page<Product> findByIsNewArrivalTrue(Pageable pageable);
 }

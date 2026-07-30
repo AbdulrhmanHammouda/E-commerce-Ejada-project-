@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.example.shopservice.exception.ResourceNotFoundException;
+
 @Service
 public class ProductService {
 
@@ -19,21 +23,21 @@ public class ProductService {
     private ImageUploadService imageUploadService;
 
     // Get products with optional filters
-    public List<Product> getProducts(String search, String audience, Boolean isBestSeller, Boolean isMostPopular, Boolean isNewArrival) {
+    public Page<Product> getProducts(String search, String audience, Boolean isBestSeller, Boolean isMostPopular, Boolean isNewArrival, Pageable pageable) {
         if (search != null && !search.isEmpty()) {
-            return productRepository.findByNameContainingIgnoreCase(search);
+            return productRepository.findByNameContainingIgnoreCase(search, pageable);
         } else if (audience != null && !audience.isEmpty()) {
-            return productRepository.findByTargetAudienceIgnoreCase(audience);
+            return productRepository.findByTargetAudienceIgnoreCase(audience, pageable);
         } else if (Boolean.TRUE.equals(isBestSeller)) {
-            return productRepository.findByIsBestSellerTrue();
+            return productRepository.findByIsBestSellerTrue(pageable);
         } else if (Boolean.TRUE.equals(isMostPopular)) {
-            return productRepository.findByIsMostPopularTrue();
+            return productRepository.findByIsMostPopularTrue(pageable);
         } else if (Boolean.TRUE.equals(isNewArrival)) {
-            return productRepository.findByIsNewArrivalTrue();
+            return productRepository.findByIsNewArrivalTrue(pageable);
         }
         
         // If no filters are provided, return everything
-        return productRepository.findAll();
+        return productRepository.findAll(pageable);
     }
 
     // Get a single product by ID

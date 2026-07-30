@@ -23,10 +23,15 @@ public class ReviewController {
     @Autowired
     private ReviewService reviewService;
 
-    // GET /api/shop/reviews/{productId}
+    // GET /api/shop/reviews/{productId}?page=0&size=20
     @GetMapping("/{productId}")
-    public ResponseEntity<ApiResponse> getProductReviews(@PathVariable Long productId) {
-        List<Review> reviews = reviewService.getProductReviews(productId);
+    public ResponseEntity<ApiResponse> getProductReviews(
+            @PathVariable Long productId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        org.springframework.data.domain.Page<Review> reviews = reviewService.getProductReviews(productId, pageable);
         ProductReviewsResponse response = DtoMapper.mapToProductReviewsResponse(productId, reviews);
         return ResponseEntity.ok(new ApiResponse(true, "Reviews retrieved successfully", response));
     }

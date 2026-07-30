@@ -7,7 +7,8 @@ import com.example.shopservice.repository.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class ReviewService {
@@ -18,8 +19,8 @@ public class ReviewService {
     @Autowired
     private ProductRepository productRepository;
 
-    public List<Review> getProductReviews(Long productId) {
-        return reviewRepository.findByProductIdOrderByCreatedAtDesc(productId);
+    public Page<Review> getProductReviews(Long productId, Pageable pageable) {
+        return reviewRepository.findByProductIdOrderByCreatedAtDesc(productId, pageable);
     }
 
     public Review addReview(Long userId, Long productId, Review review) {
