@@ -13,6 +13,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import com.example.walletservice.dto.response.PaginatedResponse;
 
 @RestController
 @RequestMapping("/api/wallet")
@@ -41,8 +44,14 @@ public class WalletController {
     }
 
     @GetMapping({"/transactions", "/history"})
-    public ResponseEntity<ApiResponse> getTransactionHistory(@RequestHeader("X-User-Id") Long userId) {
-        List<TransactionResponse> transactions = walletService.getTransactionHistory(userId);
+    public ResponseEntity<ApiResponse> getTransactionHistory(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        
+        Pageable pageable = PageRequest.of(page, size);
+        PaginatedResponse<TransactionResponse> transactions = walletService.getTransactionHistory(userId, pageable);
+        
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new ApiResponse(true, "Transaction history retrieved successfully", transactions));

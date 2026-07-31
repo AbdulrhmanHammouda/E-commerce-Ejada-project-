@@ -16,6 +16,9 @@ import com.example.walletservice.repository.WalletRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.example.walletservice.dto.response.PaginatedResponse;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -76,13 +79,13 @@ public class WalletService {
     }
 
     @Transactional(readOnly = true)
-    public List<TransactionResponse> getTransactionHistory(Long userId) {
+    public PaginatedResponse<TransactionResponse> getTransactionHistory(Long userId, Pageable pageable) {
         Wallet wallet = walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new WalletNotFoundException("Wallet not found for user: " + userId));
 
-        List<Transaction> transactions = transactionRepository.findByWalletIdOrderByCreatedAtDesc(wallet.getId());
+        Page<Transaction> transactionPage = transactionRepository.findByWalletIdOrderByCreatedAtDesc(wallet.getId(), pageable);
 
-        return transactions.stream()
+        List<TransactionResponse> responseList = transactionPage.getContent().stream()
                 .map(t -> new TransactionResponse(
                         t.getId(),
                         t.getType(),
@@ -91,5 +94,12 @@ public class WalletService {
                         t.getCreatedAt()
                 ))
                 .toList();
+
+        return new PaginatedResponse<>(
+                responseList,
+                transactionPage.getNumber(),
+                transactionPage.getTotalPages(),
+                transactionPage.getTotalElements()
+        );
     }
 }
