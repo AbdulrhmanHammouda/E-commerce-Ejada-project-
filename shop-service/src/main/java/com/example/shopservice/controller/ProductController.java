@@ -12,14 +12,21 @@ import com.example.shopservice.dto.response.ProductResponse;
 import com.example.shopservice.dto.response.ApiResponse;
 import com.example.shopservice.mapper.DtoMapper;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.List;
 import java.math.BigDecimal;
 import org.springframework.web.multipart.MultipartFile;
+import com.example.shopservice.client.InventoryClient;
+
 @RestController
 @RequestMapping("/api/shop/products")
 public class ProductController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private InventoryClient inventoryClient;
 
     // GET /api/shop/products (with optional UI filters and pagination)
     @GetMapping
@@ -35,8 +42,21 @@ public class ProductController {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
         org.springframework.data.domain.Page<Product> productPage = productService.getProducts(search, audience, isBestSeller, isPopular, isNew, pageable);
         
-        List<ProductResponse> responseList = productPage.getContent().stream()
-                .map(DtoMapper::mapToProductResponse)
+        List<Product> products = productPage.getContent();
+        List<Long> productIds = products.stream().map(Product::getId).collect(Collectors.toList());
+        
+        Map<Long, Integer> stockMap = Map.of();
+        try {
+            if (!productIds.isEmpty()) {
+                stockMap = inventoryClient.getBulkStock(productIds);
+            }
+        } catch (Exception e) {
+            System.err.println("Could not fetch bulk stock: " + e.getMessage());
+        }
+
+        final Map<Long, Integer> finalStockMap = stockMap;
+        List<ProductResponse> responseList = products.stream()
+                .map(product -> DtoMapper.mapToProductResponse(product, finalStockMap.get(product.getId())))
                 .collect(Collectors.toList());
                 
         com.example.shopservice.dto.response.PaginatedResponse<ProductResponse> paginatedResponse = 
@@ -54,7 +74,16 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> getProductById(@PathVariable Long id) {
         return productService.getProductById(id)
-                .map(product -> ResponseEntity.ok(new ApiResponse(true, "Product retrieved successfully", DtoMapper.mapToProductResponse(product))))
+                .map(product -> {
+                    Integer stock = null;
+                    try {
+                        Map<Long, Integer> stockMap = inventoryClient.getBulkStock(List.of(id));
+                        stock = stockMap.get(id);
+                    } catch (Exception e) {
+                        System.err.println("Could not fetch stock: " + e.getMessage());
+                    }
+                    return ResponseEntity.ok(new ApiResponse(true, "Product retrieved successfully", DtoMapper.mapToProductResponse(product, stock)));
+                })
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, "Product not found", null)));
     }
 
@@ -66,6 +95,7 @@ public class ProductController {
             @RequestParam("price") BigDecimal price,
             @RequestParam("category") String category,
             @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestParam(value = "initialQuantity", defaultValue = "0") int initialQuantity,
             @RequestHeader(value = "X-User-Role", required = false) String role) {
         
         if (role == null) {
@@ -83,8 +113,12 @@ public class ProductController {
         product.setPrice(price);
         product.setCategory(category);
 
-        Product savedProduct = productService.createProduct(product, image);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Product created successfully", DtoMapper.mapToProductResponse(savedProduct)));
+        try {
+            Product savedProduct = productService.createProduct(product, image, initialQuantity);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, "Product created successfully", DtoMapper.mapToProductResponse(savedProduct, initialQuantity)));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, e.getMessage(), null));
+        }
     }
 
     // PUT /api/shop/products/{id}
@@ -109,6 +143,34 @@ public class ProductController {
         if (category != null) productUpdates.setCategory(category);
 
         Product updatedProduct = productService.updateProduct(id, productUpdates, image);
-        return ResponseEntity.ok(new ApiResponse(true, "Product updated successfully", DtoMapper.mapToProductResponse(updatedProduct)));
+        
+        Integer stock = null;
+        try {
+            Map<Long, Integer> stockMap = inventoryClient.getBulkStock(List.of(id));
+            stock = stockMap.get(id);
+        } catch (Exception e) {
+            System.err.println("Could not fetch stock: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(new ApiResponse(true, "Product updated successfully", DtoMapper.mapToProductResponse(updatedProduct, stock)));
+    }
+
+    // POST /api/shop/products/{id}/stock
+    @PostMapping("/{id}/stock")
+    public ResponseEntity<ApiResponse> addStock(
+            @PathVariable Long id,
+            @RequestParam("quantity") int quantity,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+        
+        if (role == null || !"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(false, "Forbidden", null));
+        }
+
+        try {
+            productService.addStock(id, quantity);
+            return ResponseEntity.ok(new ApiResponse(true, "Stock added successfully", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, e.getMessage(), null));
+        }
     }
 }

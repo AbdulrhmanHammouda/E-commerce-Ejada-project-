@@ -22,4 +22,5 @@ public class ProductResponse {
     private boolean isBestSeller;
     private boolean isMostPopular;
     private boolean isNewArrival;
+    private Integer stockQuantity;
 }

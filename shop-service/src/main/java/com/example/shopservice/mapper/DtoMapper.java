@@ -10,6 +10,10 @@ import java.util.stream.Collectors;
 public class DtoMapper {
 
     public static ProductResponse mapToProductResponse(Product product) {
+        return mapToProductResponse(product, null);
+    }
+
+    public static ProductResponse mapToProductResponse(Product product, Integer stockQuantity) {
         if (product == null) return null;
         return new ProductResponse(
                 product.getId(),
@@ -21,7 +25,8 @@ public class DtoMapper {
                 product.getTargetAudience(),
                 product.isBestSeller(),
                 product.isMostPopular(),
-                product.isNewArrival()
+                product.isNewArrival(),
+                stockQuantity
         );
     }
 

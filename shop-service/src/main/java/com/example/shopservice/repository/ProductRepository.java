@@ -17,4 +17,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByIsBestSellerTrue(Pageable pageable);
     Page<Product> findByIsMostPopularTrue(Pageable pageable);
     Page<Product> findByIsNewArrivalTrue(Pageable pageable);
+    
+    // Uniqueness checks
+    boolean existsByNameIgnoreCase(String name);
 }

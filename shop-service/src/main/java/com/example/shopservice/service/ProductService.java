@@ -11,7 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import com.example.shopservice.exception.ResourceNotFoundException;
+import com.example.shopservice.client.InventoryClient;
+import java.util.Map;
 
 @Service
 public class ProductService {
@@ -21,6 +22,9 @@ public class ProductService {
 
     @Autowired
     private ImageUploadService imageUploadService;
+
+    @Autowired
+    private InventoryClient inventoryClient;
 
     // Get products with optional filters
     public Page<Product> getProducts(String search, String audience, Boolean isBestSeller, Boolean isMostPopular, Boolean isNewArrival, Pageable pageable) {
@@ -46,12 +50,24 @@ public class ProductService {
     }
 
     // Add a new product to the database (handles image upload)
-    public Product createProduct(Product product, MultipartFile image) {
+    public Product createProduct(Product product, MultipartFile image, int initialQuantity) {
+        if (productRepository.existsByNameIgnoreCase(product.getName())) {
+            throw new RuntimeException("A product with the name '" + product.getName() + "' already exists. Please use the update or restock endpoints.");
+        }
+
         if (image != null && !image.isEmpty()) {
             String imageUrl = imageUploadService.uploadImage(image);
             product.setImageUrl(imageUrl);
         }
-        return productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
+        
+        try {
+            inventoryClient.initializeStock(savedProduct.getId(), Map.of("quantity", initialQuantity));
+        } catch (Exception e) {
+            System.err.println("Failed to initialize inventory for product: " + savedProduct.getId());
+        }
+        
+        return savedProduct;
     }
 
     // Update an existing product
@@ -74,5 +90,14 @@ public class ProductService {
             
             return productRepository.save(existingProduct);
         }).orElseThrow(() -> new RuntimeException("Product not found with id " + id));
+    }
+
+    // Add stock to an existing product
+    public void addStock(Long productId, int quantity) {
+        // Ensure the product exists first
+        productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
+        
+        inventoryClient.addStock(productId, Map.of("quantity", quantity));
     }
 }
