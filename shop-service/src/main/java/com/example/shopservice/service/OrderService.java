@@ -13,6 +13,7 @@ import com.example.shopservice.exception.OutOfStockException;
 import feign.FeignException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class OrderService {
         this.inventoryClient = inventoryClient;
     }
 
+    @CircuitBreaker(name = "checkoutService", fallbackMethod = "checkoutFallback")
     @Transactional
     public Order checkout(Long userId) {
         // 1. Get the user's cart
@@ -101,6 +103,10 @@ public class OrderService {
         }
 
         return order;
+    }
+
+    public Order checkoutFallback(Long userId, Throwable t) {
+        throw new RuntimeException("Checkout service is currently unavailable due to high load or downstream failures. Please try again later. Reason: " + t.getMessage());
     }
 
     public List<Order> getOrderHistory(Long userId) {
