@@ -102,4 +102,11 @@ public class WalletService {
                 transactionPage.getTotalElements()
         );
     }
+
+    @Transactional(readOnly = true)
+    public BigDecimal getBalance(Long userId) {
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new WalletNotFoundException("Wallet not found for user: " + userId));
+        return wallet.getBalance();
+    }
 }

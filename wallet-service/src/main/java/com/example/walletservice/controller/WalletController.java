@@ -56,4 +56,12 @@ public class WalletController {
                 .status(HttpStatus.OK)
                 .body(new ApiResponse(true, "Transaction history retrieved successfully", transactions));
     }
+
+    @GetMapping("/balance")
+    public ResponseEntity<ApiResponse> getBalance(@RequestHeader("X-User-Id") Long userId) {
+        java.math.BigDecimal balance = walletService.getBalance(userId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ApiResponse(true, "Balance retrieved successfully", java.util.Map.of("balance", balance)));
+    }
 }
