@@ -15,10 +15,83 @@ The system is composed of several independent microservices communicating via RE
 
 - Java 17
 - Spring Boot
-- Spring Cloud (Eureka, Gateway, OpenFeign)
+- Spring Cloud (Eureka, Gateway, Config, OpenFeign)
 - Spring Data JPA
 - JWT Authentication
 - Maven
+- Cloudinary API
+
+## Project Structure
+
+```text
+EjadaProj
+├── api-gateway        # Central API routing and JWT security (Port 8000)
+├── config-repo        # Centralized Git-backed configuration properties
+├── config-server      # Spring Cloud Config Server (Port 8888)
+├── eureka-server      # Netflix Eureka Service Registry (Port 8761)
+├── inventory-service  # Manages product stock levels (Port 8084)
+├── shop-service       # Core e-commerce domains, carts, and image uploads (Port 8081)
+└── wallet-service     # User authentication, JWT issuance, and wallets (Port 8082)
+```
+
+## Database Diagram
+
+The system uses a microservices-per-database pattern. Below is the logical relationship map:
+
+```mermaid
+erDiagram
+    %% Wallet Service DB
+    USER ||--|| WALLET : "has one"
+    USER {
+        Long id PK
+        String fullName
+        String email
+        String password
+        String role
+    }
+    WALLET {
+        Long id PK
+        BigDecimal balance
+        Long user_id FK
+    }
+
+    %% Shop Service DB
+    PRODUCT ||--o{ REVIEW : "has many"
+    PRODUCT ||--o{ CART_ITEM : "in carts"
+    PRODUCT {
+        Long id PK
+        String name
+        String description
+        BigDecimal price
+        String category
+        String imageUrl
+    }
+    REVIEW {
+        Long id PK
+        Integer rating
+        String comment
+        Long productId FK
+        Long userId FK
+    }
+    CART_ITEM {
+        Long id PK
+        Integer quantity
+        Long productId FK
+        Long userId FK
+    }
+    
+    %% Inventory Service DB
+    INVENTORY {
+        Long id PK
+        Integer quantity
+        Long productId FK
+    }
+
+    %% Logical Relationships across microservices
+    USER ||--o{ REVIEW : "writes"
+    USER ||--o{ CART_ITEM : "owns"
+    PRODUCT ||--|| INVENTORY : "tracked by"
+```
 
 ## Prerequisites
 
