@@ -13,7 +13,6 @@ import com.example.shopservice.exception.OutOfStockException;
 import feign.FeignException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ public class OrderService {
         this.inventoryClient = inventoryClient;
     }
 
-    @CircuitBreaker(name = "checkoutService", fallbackMethod = "checkoutFallback")
     @Transactional
     public Order checkout(Long userId) {
         // 1. Get the user's cart
@@ -56,8 +54,8 @@ public class OrderService {
                 inventoryClient.deductStock(cartItem.getProduct().getId(), Map.of("quantity", cartItem.getQuantity()));
                 deductedItems.add(cartItem);
             }
-        } catch (FeignException e) {
-            // If inventory fails (e.g. out of stock), rollback the ones we already deducted
+        } catch (Exception e) {
+            // If inventory fails (Circuit Breaker fallback or out of stock), rollback the ones we already deducted
             for (CartItem itemToRestore : deductedItems) {
                 try {
                     inventoryClient.restoreStock(itemToRestore.getProduct().getId(), Map.of("quantity", itemToRestore.getQuantity()));
@@ -89,8 +87,8 @@ public class OrderService {
         try {
             WithdrawRequest withdrawRequest = new WithdrawRequest(totalCost, "Checkout for " + cartItems.size() + " items");
             walletClient.withdrawFunds(withdrawRequest, userId);
-        } catch (FeignException e) {
-            // If Wallet fails, we MUST manually restore all inventory we deducted in Step 2!
+        } catch (Exception e) {
+            // If Wallet fails (Circuit Breaker fallback or insufficient funds), we MUST manually restore all inventory we deducted in Step 2!
             for (CartItem itemToRestore : cartItems) {
                 try {
                     inventoryClient.restoreStock(itemToRestore.getProduct().getId(), Map.of("quantity", itemToRestore.getQuantity()));
@@ -103,10 +101,6 @@ public class OrderService {
         }
 
         return order;
-    }
-
-    public Order checkoutFallback(Long userId, Throwable t) {
-        throw new RuntimeException("Checkout service is currently unavailable due to high load or downstream failures. Please try again later. Reason: " + t.getMessage());
     }
 
     public List<Order> getOrderHistory(Long userId) {

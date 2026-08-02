@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import java.util.Map;
 
 // We connect to the "wallet-service" registered in Eureka
-@FeignClient(name = "wallet-service")
+@FeignClient(name = "wallet-service", fallback = WalletClientFallback.class)
 public interface WalletClient {
 
     @PostMapping("/api/wallet/withdraw")
