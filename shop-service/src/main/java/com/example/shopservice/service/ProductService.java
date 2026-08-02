@@ -32,12 +32,12 @@ public class ProductService {
             return productRepository.findByNameContainingIgnoreCase(search, pageable);
         } else if (audience != null && !audience.isEmpty()) {
             return productRepository.findByTargetAudienceIgnoreCase(audience, pageable);
-        } else if (Boolean.TRUE.equals(isBestSeller)) {
-            return productRepository.findByIsBestSellerTrue(pageable);
-        } else if (Boolean.TRUE.equals(isMostPopular)) {
-            return productRepository.findByIsMostPopularTrue(pageable);
-        } else if (Boolean.TRUE.equals(isNewArrival)) {
-            return productRepository.findByIsNewArrivalTrue(pageable);
+        } else if (isBestSeller != null) {
+            return productRepository.findByIsBestSeller(isBestSeller, pageable);
+        } else if (isMostPopular != null) {
+            return productRepository.findByIsMostPopular(isMostPopular, pageable);
+        } else if (isNewArrival != null) {
+            return productRepository.findByIsNewArrival(isNewArrival, pageable);
         }
         
         // If no filters are provided, return everything

@@ -14,9 +14,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // UI Filters
     Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
     Page<Product> findByTargetAudienceIgnoreCase(String targetAudience, Pageable pageable);
-    Page<Product> findByIsBestSellerTrue(Pageable pageable);
-    Page<Product> findByIsMostPopularTrue(Pageable pageable);
-    Page<Product> findByIsNewArrivalTrue(Pageable pageable);
+    Page<Product> findByIsBestSeller(Boolean isBestSeller, Pageable pageable);
+    Page<Product> findByIsMostPopular(Boolean isMostPopular, Pageable pageable);
+    Page<Product> findByIsNewArrival(Boolean isNewArrival, Pageable pageable);
     
     // Uniqueness checks
     boolean existsByNameIgnoreCase(String name);
